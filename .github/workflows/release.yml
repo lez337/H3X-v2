@@ -1,0 +1,38 @@
+name: Build Windows release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node node_modules/electron/install.js
+      - run: npm test
+      - run: npm run dist:win
+      - shell: powershell
+        run: ./setup/build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: H3X-Windows-Installers
+          path: |
+            release/*.exe
+            release/SHA256SUMS.txt
+      - name: Publish new version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          gh release view "v$version" *> $null
+          if ($LASTEXITCODE -eq 0) { Write-Host "Version already published; artifacts available on this run."; exit 0 }
+          gh release create "v$version" "release/H3X-Setup.exe" "release/H3X-Searcher-Setup-$version-x64.exe" "release/SHA256SUMS.txt" --title "H3X Searcher $version" --notes "Windows x64 installer. Setup connects to this repository for Install and Repair / Update. Multi-provider concurrent search is included. OathNet needs an API key; optional tools need separate configuration. Binaries are unsigned."
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }
