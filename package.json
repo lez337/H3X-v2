@@ -1,6 +1,6 @@
 {
   "name": "h3x-searcher-v2",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "H3X Searcher Windows OSINT workspace",
   "main": "electron/main.cjs",
@@ -55,4 +55,3 @@
     }
   }
 }
-

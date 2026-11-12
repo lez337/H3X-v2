@@ -20,6 +20,15 @@ jobs:
       - run: npm run dist:win
       - shell: powershell
         run: ./setup/build.ps1
+      - name: Check setup release parsing and download verification
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path release/H3X-Setup.exe).Path
+          $report = Join-Path $env:RUNNER_TEMP 'h3x-setup-verification.json'
+          $process = Start-Process -FilePath $exe -ArgumentList '--verify-download', $report -Wait -PassThru
+          if ($process.ExitCode -ne 0) { Get-Content $report; throw 'Setup verification failed.' }
+          $result = Get-Content $report | ConvertFrom-Json
+          if (-not $result.verified) { throw 'Setup did not verify the installer.' }
       - uses: actions/upload-artifact@v4
         with:
           name: H3X-Windows-Installers
