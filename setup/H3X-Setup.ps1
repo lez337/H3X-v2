@@ -162,7 +162,10 @@ $worker={
             foreach($line in (Get-Content -LiteralPath $sumfile)){
                 if($line -match '^([a-fA-F0-9]{64})\s+\*?(.+)$' -and $matches[2] -ceq $name){$hash=$matches[1];break}
             }
-            if(!$hash -or (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash -ine $hash){throw 'Installer verification failed. Nothing was installed.'}
+            $sha=[Security.Cryptography.SHA256]::Create();$stream=[IO.File]::OpenRead($installer)
+            try{$actualHash=([BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-','')}
+            finally{$stream.Dispose();$sha.Dispose()}
+            if(!$hash -or $actualHash -ine $hash){throw 'Installer verification failed. Nothing was installed.'}
             if((Get-Item -LiteralPath $installer).Length -ne $asset.size){throw 'Installer size did not match the release. Nothing was installed.'}
             if($mode -eq 'verify'){
                 [pscustomobject]@{message='Download verified';percent=100;verified=$true;version=$tag;asset=$name;sha256=$hash}

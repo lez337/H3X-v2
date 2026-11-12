@@ -25,6 +25,8 @@ internal static class SetupLauncher {
             start.CreateNoWindow = true;
             start.WindowStyle = ProcessWindowStyle.Hidden;
             start.RedirectStandardError = true;
+            // Let Windows PowerShell initialize its own module paths, including when launched by pwsh.
+            start.EnvironmentVariables.Remove("PSModulePath");
             using (Process process = Process.Start(start)) {
                 string error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
