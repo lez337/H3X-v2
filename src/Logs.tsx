@@ -1,0 +1,16 @@
+import {useMemo,useState} from 'react';
+import {Activity,Download,Pause,Play,Search} from 'lucide-react';
+type Entry={id?:string;time:string;event:string;detail:string;level?:string;scope?:string;durationMs?:number};
+export default function Logs({entries,onError}:{entries:Entry[];onError:(message:string)=>void}){
+ const [query,setQuery]=useState(''),[level,setLevel]=useState('all'),[scope,setScope]=useState('all'),[snapshot,setSnapshot]=useState<Entry[]|null>(null),[exporting,setExporting]=useState(false);
+ const current=snapshot??entries;
+ const visible=useMemo(()=>current.filter(e=>(level==='all'||e.level===level)&&(scope==='all'||e.scope===scope)&&`${e.event} ${e.detail} ${e.scope}`.toLowerCase().includes(query.toLowerCase())).slice().reverse(),[current,query,level,scope]);
+ async function exportLog(){setExporting(true);try{await window.h3x.exportLogs()}catch(e){onError('Log export failed: '+(e instanceof Error?e.message:String(e)))}finally{setExporting(false)}}
+ return <section className="log-console" aria-label="Activity logs">
+  <div className="log-overview"><span><Activity size={15}/>{snapshot?'Paused':'Live activity'}</span><span>{current.length} events</span><span>{current.filter(e=>e.level==='error').length} errors</span><span>{current.filter(e=>e.level==='warning').length} warnings</span></div>
+  <p className="muted">Saved operation history, provider status and failures. Search queries and credentials are omitted. Up to 2,000 recent events are shown.</p>
+  <div className="log-toolbar"><label className="log-search"><Search size={15}/><input aria-label="Search logs" placeholder="Search events or details" value={query} onChange={e=>setQuery(e.target.value)}/></label><select aria-label="Log severity" value={level} onChange={e=>setLevel(e.target.value)}><option value="all">All levels</option>{['info','warning','error'].map(v=><option key={v}>{v}</option>)}</select><select aria-label="Log source" value={scope} onChange={e=>setScope(e.target.value)}><option value="all">All sources</option>{Array.from(new Set(current.map(e=>e.scope||'workspace'))).sort().map(v=><option key={v}>{v}</option>)}</select><button onClick={()=>setSnapshot(snapshot?null:entries.slice())}>{snapshot?<Play size={14}/>:<Pause size={14}/>}{snapshot?'Resume':'Pause'}</button><button disabled={exporting||!entries.length} onClick={exportLog}><Download size={14}/>{exporting?'Exporting…':'Export history'}</button></div>
+  <div className="log-count">{visible.length} matching events · newest first{snapshot&&' · updates paused'}</div>
+  <div className="log-feed" role="region" aria-label="Log entries" tabIndex={0}>{visible.map((e,i)=><article className={'log-entry log-'+(e.level||'info')} key={e.id||`${e.time}-${i}`}><time dateTime={e.time} title={e.time}>{new Date(e.time).toLocaleString()}</time><span className="log-level">{e.level||'info'}</span><div className="log-message"><b>{e.event}</b>{e.detail&&<p>{e.detail}</p>}</div><span className="log-source">{e.scope||'workspace'}{e.durationMs!=null&&<small>{e.durationMs.toLocaleString()} ms</small>}</span></article>)}{!visible.length&&<div className="empty">{current.length?'No events match these filters.':'No activity recorded yet. Events will appear as you use the app.'}</div>}</div>
+ </section>;
+}

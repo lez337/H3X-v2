@@ -1,0 +1,5 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {report}=require('./report.cjs');
+test('exports legacy case notes without person folders',()=>{const html=report({title:'Existing case',summary:'Legacy summary',notes:'Legacy notes'});assert.ok(html.includes('Legacy summary'));assert.ok(html.includes('Legacy notes'));assert.ok(html.includes('<b>0</b> person folders'));});
+test('exports nested people and evidence while escaping untrusted content',()=>{const html=report({title:'<script>alert(1)</script>',people:[{name:'Person 1',phone:'+33 123',address:'Test address',evidence:[{source:'OathNet',query:'test',fields:{name:'<img src=x onerror=alert(1)>',nested:{a:'hello'}}}]},{name:'Person 2'}]});assert.ok(html.includes('<b>2</b> person folders'));assert.ok(html.includes('<b>1</b> saved records'));assert.ok(html.includes('Person 2'));assert.ok(html.includes('Test address'));assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));assert.ok(html.includes('&quot;a&quot;'));});

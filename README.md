@@ -1,27 +1,34 @@
 # H3X Searcher V2
 
-Download **H3X-Setup.exe** from [the latest release](https://github.com/lez337/H3X-v2/releases/latest). Setup downloads and checks the current Windows x64 installer. Install and Repair / Update launch that installer; Uninstall opens the installed app's uninstaller. The complete installer can also be run offline.
+Download **[H3X-Setup.exe](https://github.com/lez337/H3X-v2/releases/latest/download/H3X-Setup.exe)** from the latest release for Windows x64.
 
-## Development
+The black-and-white setup automatically uses **lez337/H3X-v2**. Install and Repair / Update download the latest stable installer, check its SHA-256 checksum and size, and install within the same setup flow. H3X stays closed after installation. Uninstall keeps your saved workspace and settings. Use the full `H3X-Searcher-Setup-VERSION-x64.exe` release attachment for offline installation.
 
-Node.js 22 or newer on Windows. Run `npm install`, then `node node_modules/electron/install.js` if installation scripts were blocked, then `npm run dev`.
+## Development and builds
 
-## Build
+Use Windows and Node.js 22 or newer:
 
-Run `npm run dist:win`, followed by `powershell -NoProfile -File setup/build.ps1`. Outputs are in `release/`. No Node.js installation is needed to use the packaged app.
+```powershell
+npm ci
+npm run dev
+```
 
-## Search
+```powershell
+npm test
+powershell -NoProfile -File setup/Verify-Setup.ps1
+npm run dist:win
+```
 
-Select several provider checkboxes, enter a query, confirm authorization, and click Search. Providers run concurrently; each provider shows its own result count or error. Search within results filters the combined redacted cards.
+All setup files and `SHA256SUMS.txt` are generated under `release/`. See [BUILDING.md](BUILDING.md) for publishing and update details.
 
-OathNet requires your own API key in Settings. BrixHub currently uses its documented temporary public API with no key. GitHub public profile lookup takes a username; RDAP takes a domain or IP. Unsupported query types and provider failures appear separately. API contracts were reviewed November 8, 2026; live keyed searches have not been verified with an account.
+## Releases and updates
 
-Telegram entries copy a query and open the bot for manual interaction. WhatsMyName opens the external search site. GHunt requires an installed executable and prior authentication; SpiderFoot requires its separately running local interface. These are optional tool connections, not bundled search engines.
+Pushes to `main` run tests, build the Windows app and setup, verify a GitHub download, and publish a stable release when the package version has no published release yet. Increase the version with `npm version patch --no-git-tag-version` before publishing the next version. Existing published installers are preserved.
 
-Case records, graph links, map pins, shortcuts and settings are stored locally in the app data directory. API credentials use Electron safeStorage on Windows. Map tiles need internet access and WebGL support. Case TXT exports contain the notes you enter. Results are masked before reaching the renderer; masking is not a substitute for reviewing exports.
+The installed app checks **lez337/H3X-v2** for updates by default. Manage automatic checks in Settings. Installing an update saves the workspace, closes H3X, and leaves it closed. No GitHub token is embedded. Binaries are unsigned.
 
-## GitHub releases
+## Workspace
 
-The release workflow builds Windows x64 setup on pushes to main. It publishes a release only when the package version has no existing release tag. Increase package.json and package-lock.json versions for a new release. Assets: H3X-Setup.exe, H3X-Searcher-Setup-VERSION-x64.exe, SHA256SUMS.txt.
+Configure providers under Settings. OathNet requires your own API key. Optional GHunt commands require separate installation and authentication. Telegram account credentials and API credentials use Windows protected storage; they are kept outside the workspace JSON and exports. Search results and local field confidence scores require review before use.
 
-Setup always uses public releases from **lez337/H3X-v2**. No GitHub token is embedded in the app. Binaries are unsigned.
+Workspace records, logs, settings and exports stay in the local app data directory. Map tiles need internet and WebGL. The OathNet file tree exposes redacted manifest metadata and does not download stealer file contents.

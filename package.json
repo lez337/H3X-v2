@@ -1,22 +1,33 @@
 {
   "name": "h3x-searcher-v2",
-  "version": "0.2.2",
+  "version": "0.2.3",
+  "repository": { "type": "git", "url": "https://github.com/lez337/H3X-v2.git" },
+  "releaseRepository": "lez337/H3X-v2",
   "private": true,
   "description": "H3X Searcher Windows OSINT workspace",
   "main": "electron/main.cjs",
   "scripts": {
+    "telegram:ensure": "node setup/Ensure-Telegram.cjs",
+    "predev": "npm run telegram:ensure",
+    "prestart": "npm run telegram:ensure",
+    "telegram:install": "npm install telegram@^2.26.8 qrcode@^1.5.4 --save",
+    "telegram:check": "node -e \"try { require.resolve('telegram'); require.resolve('qrcode') } catch { console.error('Run npm run telegram:install before packaging Telegram support.'); process.exit(1) }\"",
     "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron .\"",
     "build": "tsc --noEmit && vite build",
     "start": "electron .",
     "test": "node --test electron/*.test.cjs",
-    "dist:win": "npm run build && electron-builder --win nsis --publish never"
+    "dist:win": "npm run telegram:ensure && npm run telegram:check && npm run build && npm run setup:art && electron-builder --win nsis --x64 --publish never && npm run setup:build && node setup/checksums.cjs",
+    "setup:build": "powershell -NoProfile -ExecutionPolicy Bypass -File setup/Build-Setup.ps1",
+    "setup:art": "powershell -NoProfile -ExecutionPolicy Bypass -File setup/Build-Branding.ps1"
   },
   "dependencies": {
     "jszip": "^3.10.1",
     "lucide-react": "^0.468.0",
-    "maplibre-gl": "^5.16.0",
+    "maplibre-gl": "^6.18.0",
+    "qrcode": "^1.5.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "telegram": "^2.26.8"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -24,8 +35,8 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^9.1.0",
-    "electron": "^35.0.0",
-    "electron-builder": "^26.0.0",
+    "electron": "^45.3.1",
+    "electron-builder": "^26.18.0",
     "typescript": "^5.8.0",
     "vite": "^6.2.0",
     "wait-on": "^8.0.0"
@@ -37,21 +48,32 @@
       "dist/**/*",
       "electron/**/*",
       "package.json",
-      "!electron/*.test.cjs"
+      "!electron/*.test.cjs",
+      "build/icon.ico"
     ],
     "directories": {
       "output": "release"
     },
     "win": {
       "target": "nsis",
-      "signAndEditExecutable": false,
-      "artifactName": "H3X-Searcher-Setup-${version}-${arch}.${ext}"
+      "icon": "build/icon.ico"
     },
     "nsis": {
+      "artifactName": "H3X-Searcher-Setup-${version}-${arch}.${ext}",
       "oneClick": false,
+      "runAfterFinish": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeader": "build/installerHeader.bmp",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/installerSidebar.bmp",
+      "include": "build/installer.nsh",
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "uninstallDisplayName": "H3X Searcher"
     }
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
   }
 }
