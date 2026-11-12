@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "electron .",
     "test": "node --test electron/*.test.cjs",
-    "dist:win": "npm run build && electron-builder --win nsis"
+    "dist:win": "npm run build && electron-builder --win nsis --publish never"
   },
   "dependencies": {
     "jszip": "^3.10.1",
@@ -55,3 +55,4 @@
     }
   }
 }
+
