@@ -1,6 +1,6 @@
 {
   "name": "h3x-searcher-v2",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "H3X Searcher Windows OSINT workspace",
   "main": "electron/main.cjs",
@@ -33,9 +33,25 @@
   "build": {
     "appId": "com.h3x.searcher.v2",
     "productName": "H3X Searcher",
-    "files": ["dist/**/*", "electron/**/*", "package.json", "!electron/*.test.cjs"],
-    "directories": {"output": "release"},
-    "win": {"target": "nsis", "signAndEditExecutable": false, "artifactName": "H3X-Searcher-Setup-${version}-${arch}.${ext}"},
-    "nsis": {"oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "uninstallDisplayName": "H3X Searcher"}
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!electron/*.test.cjs"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "signAndEditExecutable": false,
+      "artifactName": "H3X-Searcher-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "uninstallDisplayName": "H3X Searcher"
+    }
   }
 }
